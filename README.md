@@ -65,8 +65,9 @@ field was set. It does not mean an application was submitted.
 button automatically. Applications then go out with no review, including any wrong model answers.
 
 **Tailored resumes:** the model rewrites the resume for each job, and the rewrite is uploaded in place of the
-original. It is discarded if it is too short or contains a number the original doesn't. That check can't
-catch every invented claim, such as an added skill. Set `TAILOR_RESUME=false` to always upload the original.
+original. It is discarded if it is too short, contains a number the original doesn't, or uses a new word from
+the job page, which often means the original is uploaded. These checks can't catch every invented claim. Set
+`TAILOR_RESUME=false` to always upload the original.
 
 **Hidden instructions:** a job page can contain text aimed at AI models. Short answers never see the page
 text. Open answers do, so instruction-like sentences are removed first, but that can't catch every wording.

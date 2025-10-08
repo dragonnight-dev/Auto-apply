@@ -20,6 +20,12 @@ from slm.client import SLMError
 
 logger = logging.getLogger(__name__)
 MIN_LENGTH = 200
+MIN_KEPT_RATIO = 0.6
+MAX_NEW_WORD_RATIO = 0.15
+COMMON_WORDS = frozenset(
+    "a an and are as at by for from has have i in into is it my of on or our that the their this to using was "
+    "were which while who will with".split()
+)
 SYSTEM = (
     "You rewrite a resume in English to suit a job description, as plain text. Reorder and reword what is "
     "already there so the most relevant experience comes first. Keep every fact true to the source: do not add "
@@ -32,6 +38,24 @@ def adds_no_numbers(rewrite: str, source: str) -> bool:
     """Reject invented dates and metrics: every number in the rewrite must exist in the source."""
     known = set(re.findall(r"\d+", source))
     return all(number in known for number in re.findall(r"\d+", rewrite))
+
+
+def _words(text: str) -> set:
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def stays_on_resume(rewrite: str, source: str, job_text: str) -> bool:
+    """Reject claims taken from the job page, and rewrites that lose or add too much.
+
+    Testing with the real model showed a job page could add its own text and skills to a
+    rewrite. So a new word may not come from the job page at all, even though that also
+    discards some harmless rewrites; the original resume is then used.
+    """
+    if len(rewrite) < len(source) * MIN_KEPT_RATIO:
+        return False
+    words = _words(rewrite)
+    new = words - _words(source) - COMMON_WORDS
+    return not (new & _words(job_text)) and len(new) <= len(words) * MAX_NEW_WORD_RATIO
 
 
 def render_pdf(text: str) -> bytes:
@@ -58,7 +82,9 @@ def tailor_resume(email: str, resume_text: str, job_text: str, session_id: int, 
     except SLMError as exc:
         logger.warning("Resume not tailored: %s", exc)
         return None
-    if len(rewrite) < MIN_LENGTH or not adds_no_numbers(rewrite, resume_text):
+    checks = (len(rewrite) >= MIN_LENGTH, adds_no_numbers(rewrite, resume_text),
+              stays_on_resume(rewrite, resume_text, job_text))
+    if not all(checks):
         logger.warning("Discarded a tailored resume for session %s: failed checks", session_id)
         return None
     # resume_path validates the email, so the name is safe to reuse in this directory.
