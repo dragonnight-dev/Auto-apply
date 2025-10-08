@@ -3,9 +3,12 @@ import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TESTING = "test" in sys.argv
+if not TESTING:
+    load_dotenv(BASE_DIR.parent / ".env")
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
@@ -43,7 +46,7 @@ if os.environ.get("POSTGRES_HOST"):
         }
     }
 else:
-    # Local development and tests only. Docker always sets POSTGRES_HOST.
+    # The default. Set POSTGRES_HOST in .env to use a PostgreSQL server instead.
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -57,6 +60,7 @@ else:
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 BOSS_KEY = os.environ.get("BOSS_KEY", "")
+FRONTEND_DIST = Path(os.environ.get("FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist"))
 TOKEN_MAX_AGE_SECONDS = 7 * 24 * 3600
 RESUME_DIR = Path(os.environ.get("RESUME_DIR", BASE_DIR / "DB"))
 MAX_RESUME_BYTES = 5 * 1024 * 1024

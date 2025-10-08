@@ -14,26 +14,29 @@ All live communication uses WebSockets, so the server can push to any client at 
 
 ## Run the server
 
-You need Docker with the NVIDIA runtime. On a machine without a GPU, remove `gpus: all` from
-`docker-compose.yml`; the model then runs on the CPU, much more slowly.
+You need [Ollama](https://ollama.com), Python 3.12 and Node 20. Without a supported GPU, Ollama runs the
+model on the CPU, which is much slower.
 
-```sh
-cp .env.example .env     # then replace every value
-docker compose up -d --build
+```powershell
+copy .env.example .env     # then replace the values
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 ```
 
+- The script installs dependencies, builds the console, starts Ollama, downloads the model (about 4.7 GB)
+  on the first run, and starts the server.
 - In `.env`, add this machine's LAN address to `ALLOWED_HOSTS`, or other PCs will get a 400 error.
-- The first start downloads the model (about 4.7 GB). Follow it with
-  `docker compose logs -f model-download`. Until it finishes, only rule-based fields are filled.
-- The console is at `http://localhost:8080`. Choose **Create an account with a boss key** and enter the
+- The console is at `http://localhost:8000`. Choose **Create an account with a boss key** and enter the
   `BOSS_KEY` from `.env`.
-- Other PCs must be able to reach port 8080, so allow it through this machine's firewall.
+- Other PCs must be able to reach port 8000, so allow it through this machine's firewall.
+- Data is stored in `backend/dev.sqlite3`, and resumes in `backend/DB/[email].pdf`. To use PostgreSQL
+  instead, set the `POSTGRES_*` values in `.env`.
+- After changing the console's code, delete `frontend/dist` so the script rebuilds it.
 
 ## Install the extension on a client PC
 
 1. Copy the `extension/` folder to the PC. Chrome 116 or newer is required.
 2. Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked**, and select the folder.
-3. Open the extension, enter the server address (`http://<server LAN address>:8080`), and sign up with a
+3. Open the extension, enter the server address (`http://<server LAN address>:8000`), and sign up with a
    PDF resume. The client then appears in the console.
 
 ## Apply to a job
@@ -71,17 +74,17 @@ Set these in `.env`:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `DJANGO_SECRET_KEY`, `BOSS_KEY`, `POSTGRES_PASSWORD` | required | Secrets |
+| `DJANGO_SECRET_KEY`, `BOSS_KEY` | required | Secrets |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Addresses the server answers on |
 | `SLM_MODEL` | `qwen2.5:7b` | Any Ollama model that supports tools |
 | `TAILOR_RESUME` | `true` | Rewrite the resume for each job |
 | `AUTO_CLICK_SUBMIT` | `false` | Click submit after filling |
-| `HTTP_PORT` | `8080` | Published port |
+| `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | unset | Use PostgreSQL instead of SQLite |
 
 ## Limitations
 
 - **Traffic is not encrypted.** Passwords and resumes cross the network over plain HTTP, so use this only on
-  a network you trust, or put an HTTPS proxy in front of port 8080.
+  a network you trust, or put an HTTPS proxy in front of port 8000.
 - **Sign-in has no rate limiting.** Don't expose the port to the internet.
 - **Main page only.** Forms inside iframes are not detected, and some hosted application systems embed
   their forms that way.
