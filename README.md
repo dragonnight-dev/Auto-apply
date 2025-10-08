@@ -52,8 +52,8 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 | Field | Behaviour |
 | --- | --- |
 | Name, email, phone, links, location | Filled from the profile by exact rules |
-| Other short fields, dropdowns, radios | Answered by the model; the answer must match a real option |
-| Open questions | Written by the model from the profile, or left blank if it can't answer |
+| Other short fields, dropdowns, radios | Answered by the model; the answer must match a real option or use only words from the profile |
+| Open questions | Written by the model from the profile and job text, or left blank if it can't answer |
 | Gender, race, veteran, disability, birth date, ID and bank details | Never filled |
 | Terms and consent boxes, signatures | Never ticked: these need the applicant |
 | Password and hidden inputs | Never read or filled |
@@ -68,6 +68,10 @@ button automatically. Applications then go out with no review, including any wro
 original. It is discarded if it is too short or contains a number the original doesn't. That check can't
 catch every invented claim, such as an added skill. Set `TAILOR_RESUME=false` to always upload the original.
 
+**Hidden instructions:** a job page can contain text aimed at AI models. Short answers never see the page
+text. Open answers do, so instruction-like sentences are removed first, but that can't catch every wording.
+Review open answers before submitting, which is another reason `AUTO_CLICK_SUBMIT` is off by default.
+
 ## Configuration
 
 Set these in `.env`:
@@ -77,6 +81,7 @@ Set these in `.env`:
 | `DJANGO_SECRET_KEY`, `BOSS_KEY` | required | Secrets |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Addresses the server answers on |
 | `SLM_MODEL` | `qwen2.5:7b` | Any Ollama model that supports tools |
+| `SLM_NUM_CTX` | `8192` | Model context size in tokens; lower it if the GPU runs out of memory |
 | `TAILOR_RESUME` | `true` | Rewrite the resume for each job |
 | `AUTO_CLICK_SUBMIT` | `false` | Click submit after filling |
 | `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | unset | Use PostgreSQL instead of SQLite |

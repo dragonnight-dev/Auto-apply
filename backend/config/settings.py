@@ -69,6 +69,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_RESUME_BYTES + 1024 * 1024
 SLM_BASE_URL = os.environ.get("SLM_BASE_URL", "http://localhost:11434")
 SLM_MODEL = os.environ.get("SLM_MODEL", "qwen2.5:7b")
 SLM_TIMEOUT_SECONDS = float(os.environ.get("SLM_TIMEOUT_SECONDS", "180"))
+# Ollama defaults to 4096 tokens and silently truncates anything longer.
+SLM_NUM_CTX = int(os.environ.get("SLM_NUM_CTX", "8192"))
 TAILOR_RESUME = os.environ.get("TAILOR_RESUME", "true").lower() == "true"
 # Off by default: a filled form is left on the page for a person to review and submit.
 AUTO_CLICK_SUBMIT = os.environ.get("AUTO_CLICK_SUBMIT", "false").lower() == "true"

@@ -47,7 +47,7 @@ class SLMClient:
         body = {
             "model": self.model,
             "stream": False,
-            "options": {"temperature": 0.1},
+            "options": {"temperature": 0.1, "num_ctx": settings.SLM_NUM_CTX},
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             **extra,
         }
