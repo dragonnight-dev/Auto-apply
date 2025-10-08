@@ -60,7 +60,7 @@ input:not([type="checkbox"]) { display: block; width: 100%; margin-top: 3px; pad
 .server-state { color: var(--muted); }
 main section { margin-bottom: 26px; }
 
-.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.table-wrap { position: relative; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
 table { width: 100%; border-collapse: collapse; }
 th { padding: 8px 12px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; }
 td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
@@ -71,6 +71,7 @@ tbody tr:hover { background: var(--row-hover); }
 .url-cell { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-disabled td:not(:nth-child(5)) { opacity: 0.55; }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+td:has(> .dot) { white-space: nowrap; }
 .dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; }
 .dot-on { background: var(--ok); }
 .dot-off { background: var(--off); }
