@@ -33,6 +33,17 @@ class CallToolTests(SimpleTestCase):
         self.call(client)
         self.assertEqual(requests[0]["options"]["num_ctx"], 8192)
 
+    def test_limits_output_length(self):
+        client, requests = client_with([{"content": '{"a": 1}'}])
+        self.call(client)
+        self.assertEqual(requests[0]["options"]["num_predict"], 1500)
+
+    def test_reply_cut_off_at_the_limit_is_an_error(self):
+        reply = {"message": {"content": "partial resume"}, "done_reason": "length"}
+        client = SLMClient("http://slm", "m", 5, httpx.MockTransport(lambda _r: httpx.Response(200, json=reply)))
+        with self.assertRaises(SLMError):
+            client.complete("s", "u")
+
     def test_accepts_string_arguments(self):
         client, _ = client_with([{"tool_calls": [{"function": {"name": "t", "arguments": '{"a": 2}'}}]}])
         self.assertEqual(self.call(client), {"a": 2})
