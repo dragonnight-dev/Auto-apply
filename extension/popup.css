@@ -1,0 +1,10 @@
+body { width: 300px; margin: 0; padding: 12px; font: 13px/1.4 system-ui, sans-serif; color: #1c1c1c; background: #fff; }
+h1 { margin: 0 0 4px; font-size: 16px; }
+h2 { margin: 12px 0 6px; font-size: 13px; }
+label { display: block; margin-bottom: 8px; }
+input { display: block; box-sizing: border-box; width: 100%; margin-top: 2px; padding: 5px; font: inherit; }
+button { padding: 6px 12px; font: inherit; cursor: pointer; }
+summary { margin: 12px 0 6px; cursor: pointer; }
+#status { margin: 0 0 8px; color: #555; }
+#message { padding: 6px 8px; color: #8a1c1c; background: #fbeaea; border-radius: 4px; }
+#account { font-weight: 600; }

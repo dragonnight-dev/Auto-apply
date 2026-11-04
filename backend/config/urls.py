@@ -9,4 +9,5 @@ def health(_request):
 urlpatterns = [
     path("api/health", health),
     path("api/", include("accounts.urls")),
+    path("api/", include("automation.urls")),
 ]

@@ -90,3 +90,32 @@ class ClientConsumer(TokenConsumer):
         await super().disconnect(code)
         if self.subject is not None:
             await workflow.client_disconnected(self.subject, self.channel_name)
+
+
+class BossConsumer(TokenConsumer):
+    role = "boss"
+
+    @database_sync_to_async
+    def subject_exists(self, subject):
+        return get_user_model().objects.filter(id=subject, is_active=True, is_staff=True).exists()
+
+    async def authenticated(self):
+        await self.channel_layer.group_add(workflow.BOSS_GROUP, self.channel_name)
+        await self.send_json(await workflow.snapshot())
+
+    async def handle(self, content):
+        kind = content.get("type")
+        if kind == "sync":
+            await workflow.start_sync(content.get("url"))
+        elif kind == "fill":
+            await workflow.start_fill(content.get("session_id"))
+        elif kind == "refresh":
+            await self.send_json(await workflow.snapshot())
+
+    async def state_changed(self, _event):
+        await self.send_json(await workflow.snapshot())
+
+    async def disconnect(self, code):
+        await super().disconnect(code)
+        if self.subject is not None:
+            await self.channel_layer.group_discard(workflow.BOSS_GROUP, self.channel_name)

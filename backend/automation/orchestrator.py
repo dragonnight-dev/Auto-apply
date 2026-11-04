@@ -80,15 +80,6 @@ def snapshot() -> dict:
 
 # ---- connection tracking -----------------------------------------------------------------
 
-@database_sync_to_async
-def _attach(client_id: int, channel_name: str):
-    Client.objects.filter(id=client_id).update(channel_name=channel_name, action=Client.Action.IDLE)
-
-
-async def client_connected(client_id: int, channel_name: str):
-    await _attach(client_id, channel_name)
-    await _send(channel_name, {"type": "get_url"})
-    await notify_boss()
 
 
 def _record_failure(plan: FillPlan, reason: str):
@@ -103,6 +94,22 @@ def _finish_session_if_complete(session_id: int):
         ApplySession.objects.filter(id=session_id, state=State.FILLING).update(state=State.DONE)
 
 
+def _fail_inflight_plans(client_id: int, reason: str):
+    plans = FillPlan.objects.select_related("session").filter(client_id=client_id, status=FillPlan.Status.SENT)
+    for plan in plans:
+        _record_failure(plan, reason)
+        _finish_session_if_complete(plan.session_id)
+
+
+@database_sync_to_async
+def _attach(client_id: int, channel_name: str):
+    with transaction.atomic():
+        Client.objects.filter(id=client_id).update(channel_name=channel_name, action=Client.Action.IDLE)
+        # A fresh socket means the browser lost any fill in progress (for example a service
+        # worker restart). Left open, such a plan would block every later sync.
+        _fail_inflight_plans(client_id, "Client reconnected before reporting results.")
+
+
 @database_sync_to_async
 def _detach(client_id: int, channel_name: str) -> bool:
     with transaction.atomic():
@@ -113,11 +120,14 @@ def _detach(client_id: int, channel_name: str) -> bool:
             return False
         ApplySession.objects.filter(source_client_id=client_id, state=State.SYNCING).update(
             state=State.FAILED, error="The client providing the page disconnected.")
-        plans = FillPlan.objects.select_related("session").filter(client_id=client_id, status=FillPlan.Status.SENT)
-        for plan in plans:
-            _record_failure(plan, "Client disconnected before reporting results.")
-            _finish_session_if_complete(plan.session_id)
+        _fail_inflight_plans(client_id, "Client disconnected before reporting results.")
     return True
+
+
+async def client_connected(client_id: int, channel_name: str):
+    await _attach(client_id, channel_name)
+    await _send(channel_name, {"type": "get_url"})
+    await notify_boss()
 
 
 async def client_disconnected(client_id: int, channel_name: str):

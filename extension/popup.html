@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Auto Apply</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <h1>Auto Apply</h1>
+    <p id="status" role="status"></p>
+    <p id="message" role="alert" hidden></p>
+
+    <section id="signed-in" hidden>
+      <p id="account"></p>
+      <button id="sign-out" type="button">Sign out</button>
+    </section>
+
+    <section id="signed-out" hidden>
+      <label>Server address <input id="server" type="url" placeholder="http://192.168.1.10:8000" required /></label>
+
+      <form id="sign-in-form">
+        <h2>Sign in</h2>
+        <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+        <label>Password <input name="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">Sign in</button>
+      </form>
+
+      <details>
+        <summary>Create an account</summary>
+        <form id="sign-up-form">
+          <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+          <label>Password (8+ characters)
+            <input name="password" type="password" minlength="8" autocomplete="new-password" required />
+          </label>
+          <label>Full name <input name="full_name" autocomplete="name" /></label>
+          <label>Phone <input name="phone" type="tel" autocomplete="tel" /></label>
+          <label>Location <input name="location" /></label>
+          <label>LinkedIn <input name="linkedin" /></label>
+          <label>GitHub <input name="github" /></label>
+          <label>Website <input name="website" /></label>
+          <label>Work authorization <input name="work_authorization" /></label>
+          <label>Resume (PDF, up to 5 MB) <input name="resume" type="file" accept="application/pdf" required /></label>
+          <button type="submit">Sign up</button>
+        </form>
+      </details>
+    </section>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

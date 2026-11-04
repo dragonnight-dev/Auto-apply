@@ -1,0 +1,12 @@
+{
+  "name": "auto-apply-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
