@@ -1,4 +1,5 @@
 """Validate the page snapshot sent by the extension. It comes from an arbitrary web page."""
+import re
 from urllib.parse import urlsplit
 
 MAX_TEXT = 20000
@@ -10,8 +11,26 @@ FIELD_TYPES = {"text", "email", "tel", "url", "number", "date", "search", "texta
                "file"}
 
 
+INSTRUCTION_LIKE = re.compile(
+    r"ignore\b.{0,40}\b(instruction|prompt|above|previous|prior)|disregard\b.{0,40}\b(instruction|prompt|above|previous)"
+    r"|\b(system|developer) (note|prompt|message)|\bai (assistant|model|agent)s?\b|\blanguage models?\b"
+    r"|\bprompt injection\b|\bnew instructions?\b",
+    re.IGNORECASE,
+)
+
+
 class DomError(ValueError):
     pass
+
+
+def untrusted_job_text(text: str) -> str:
+    """Prepare page text for a prompt: drop sentences aimed at AI models, and anything like a delimiter.
+
+    This reduces prompt injection but cannot eliminate it, so model output is checked as well.
+    """
+    sentences = re.split(r"(?<=[.!?\n])\s+", text)
+    kept = " ".join(s for s in sentences if not INSTRUCTION_LIKE.search(s))
+    return kept.replace("<", " ").replace(">", " ")
 
 
 def is_http_url(url) -> bool:

@@ -47,14 +47,21 @@ class SLMClient:
         body = {
             "model": self.model,
             "stream": False,
-            "options": {"temperature": 0.1},
+            "options": {
+                "temperature": 0.1,
+                "num_ctx": settings.SLM_NUM_CTX,
+                "num_predict": settings.SLM_MAX_OUTPUT_TOKENS,
+            },
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             **extra,
         }
         try:
             response = self._http.post("/api/chat", json=body)
             response.raise_for_status()
-            return response.json()["message"]
+            data = response.json()
+            if data.get("done_reason") == "length":
+                raise SLMError("SLM reply was cut off at the output limit")
+            return data["message"]
         except (httpx.HTTPError, KeyError, ValueError) as exc:
             raise SLMError(f"SLM request failed: {exc}") from exc
 

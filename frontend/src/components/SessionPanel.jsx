@@ -10,6 +10,7 @@ const SKIP_REASONS = {
   sensitive: "sensitive question, left for the applicant",
   needs_person: "needs the applicant's own agreement",
   no_answer: "not answered by the profile",
+  unverified_answer: "the model's answer could not be verified",
   slm_unavailable: "model unavailable",
   unsupported_file: "only resumes are uploaded",
   too_many_long_answers: "too many long questions",
